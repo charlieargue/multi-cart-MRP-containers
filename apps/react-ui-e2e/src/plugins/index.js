@@ -17,15 +17,15 @@ module.exports = (on, config) => {
   // `on` is used to hook into various events Cypress emits
   // `config` is the resolved Cypress config
 
-  on('file:preprocessor', () => {
-    config.env.tsConfig = config.fileServerFolder + '/tsconfig.e2e.json'
+  // on('file:preprocessor', () => {
+  //   config.env.tsConfig = config.fileServerFolder + '/tsconfig.e2e.json'
     
-    // CYPRESS.JSON: // "fileServerFolder": "/__w/multi-cart/multi-cart/apps/react-ui-e2e",
-    // config.env.tsConfig = '/__w/multi-cart/multi-cart/apps/react-ui-e2e/tsconfig.e2e.json';
-    // if (!config.env.tsConfig) {
-    //   config.env.tsConfig = config.fileServerFolder + '/tsconfig.e2e.json';
-    // }
-    return preprocessTypescript(config);
-  });
+  //   // CYPRESS.JSON: // "fileServerFolder": "/__w/multi-cart/multi-cart/apps/react-ui-e2e",
+  //   // config.env.tsConfig = '/__w/multi-cart/multi-cart/apps/react-ui-e2e/tsconfig.e2e.json';
+  //   // if (!config.env.tsConfig) {
+  //   //   config.env.tsConfig = config.fileServerFolder + '/tsconfig.e2e.json';
+  //   // }
+  //   return preprocessTypescript(config);
+  // });
 };
 
