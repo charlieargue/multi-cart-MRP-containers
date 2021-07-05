@@ -10,5 +10,5 @@
   "screenshotsFolder": "../../dist/cypress/apps/react-ui-e2e/screenshots",
   "chromeWebSecurity": false,
   "baseUrl": "http://localhost:4400",
-  "projectId": "nt1i7i"
+  "projectId": "euex8g"
 }

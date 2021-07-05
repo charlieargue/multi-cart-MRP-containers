@@ -166,8 +166,8 @@
             "watch": false,
             "headless": true,
             "parallel": true,
-            "ciBuildId": "react-ui-e2e-CI-00",
-            "key": "6b6d4144-811f-4c38-a741-ffea2012ddee"
+            "ciBuildId": "react-ui-e2e-MRP-01-CI-00",
+            "key": "13ed8637-1bd7-4f37-8324-0babe2af7f28"
           },
           "configurations": {
             "ci": {
