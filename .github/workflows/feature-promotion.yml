@@ -1,0 +1,124 @@
+# ###################################################################################################
+# Feature -> develop, AND ON SUCCESS, 🔥 develop -> main (including testing pyramid)
+# ###################################################################################################
+# thx: https://docs.github.com/en/actions/guides/building-and-testing-nodejs
+# thx: https://jestjs.io/docs/cli
+# thx: https://www.karltarvas.com/2020/12/09/github-actions-cache-yarn-install.html
+# thx: https://stackoverflow.com/questions/67136614/cache-node-modules-in-github-actions
+# thx: https://github.com/cypress-io/cypress-realworld-app/blob/develop/.github/workflows/main.yml
+# thx: https://github.com/marketplace/actions/cypress-io
+
+name: cicd-pipeline
+on:
+  push:
+    branches:
+      - 'kg-**'
+jobs:
+  # ###################################################################################################
+  # 💎 (1)
+  # Doing things the non-NX way since:
+  # • multiple cypress container running in parellel
+  # • working example used artifacts of the build uploaded/downloaded instead of cache
+  # • we need the entire app up and running, all dependencies
+  # ###################################################################################################
+  install-everything-and-save:
+    runs-on: ubuntu-latest
+    container: cypress/browsers:node14.15.0-chrome86-ff82
+    steps:
+      # NODE VERSION
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # CHECKOUT feature branch
+      - name: Checkout Feature Branch
+        uses: actions/checkout@v2
+
+      # INSTALL dependencies
+      - name: Install dependencies
+        uses: cypress-io/github-action@v2
+        with:
+          runTests: false
+      - run: yarn cypress info # report machine parameters
+      - run: yarn install --prefer-offline --frozen-lockfile
+
+      # BUILD STORYBOOK build
+      - name: Build react-ui Storybook 🔥 (quietly)
+        run: yarn nx run react-ui:build-storybook:ci
+
+      # SAVE dist folder as ARTIFACT
+      - name: Save dist olders
+        uses: actions/upload-artifact@v2
+        with:
+          name: my-artifacts
+          if-no-files-found: error
+          path: dist
+
+  # ###################################################################################################
+  # 💎 (2)
+  # Each container will now pull storybook build from ARTIFACTS
+  # • and spin it up with http-server manually
+  # • and then run cypress against that storybook
+  # # ###################################################################################################
+  ui-chrome-tests-react-ui:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    container: cypress/browsers:node14.15.0-chrome86-ff82
+    needs: [install-everything-and-save]
+    strategy:
+      # when one test fails, DO NOT cancel the other
+      # containers, because this will kill Cypress processes
+      # leaving the Dashboard hanging ...
+      # https://github.com/cypress-io/github-action/issues/48
+      fail-fast: false
+      matrix:
+        # run copies of the current job in parallel
+        containers: [1, 2, 3, 4, 5]
+    steps:
+      # NODE VERSION
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v2
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      # CHECKOUT feature branch
+      - name: Checkout Feature Branch
+        uses: actions/checkout@v2
+
+      # DOWNLOAD ARTIFACTS (dist folder, storybok build)
+      - name: Download the dist folder
+        uses: actions/download-artifact@v2
+        with:
+          name: my-artifacts
+          path: dist
+
+      # 🔴 TEMP DEBUGGING: INSTALL dependencies
+      - name: Install dependencies
+        uses: cypress-io/github-action@v2
+        with:
+          runTests: false
+      - run: yarn cypress info # report machine parameters
+      - run: yarn install --prefer-offline --frozen-lockfile
+
+      # --------------------------------------
+      # run FE Storybook build + Cypress react-ui SPECS!
+      # --------------------------------------
+      - name: 'UI Tests - react-ui - Chrome'
+        uses: cypress-io/github-action@v2
+        with:
+          start: npx http-server dist/storybook/react-ui -p 4400 & yarn nx run react-ui-e2e:e2e:ci
+          browser: chrome
+          record: true
+          parallel: true
+          group: 'UI - Chrome'
+          install: false
+          spec: src/integration/**/*
+          config-file: cypress.json
+          working-directory: apps/react-ui-e2e/
+
+        env:
+          CYPRESS_PROJECT_ID: ${{ secrets.CYPRESS_PROJECT_ID_REACT_UI }}
+          CYPRESS_RECORD_KEY: ${{ secrets.CYPRESS_RECORD_KEY_REACT_UI }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEBUG: ${{ secrets.CYPRESS_DEBUG }}
