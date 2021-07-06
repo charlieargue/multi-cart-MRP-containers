@@ -125,10 +125,15 @@ jobs:
       # --------------------------------------
       # run FE Storybook build + Cypress react-ui SPECS!
       # --------------------------------------
+      # launch storybook
+      - name: Start-up Storybook
+        run: npx http-server dist/storybook/react-ui -p 4400
+
+
       - name: 'UI Tests - react-ui - Chrome'
         uses: cypress-io/github-action@v2
         with:
-          start: npx http-server dist/storybook/react-ui -p 4400, yarn nx run react-ui-e2e:e2e:ci
+          start: yarn nx run react-ui-e2e:e2e:ci
           wait-on: 'http://127.0.0.1:4400'
           browser: chrome
           record: true
