@@ -10,6 +10,9 @@ jobs:
   install-everything-and-save:
     runs-on: ubuntu-latest
     container: cypress/browsers:node14.15.0-chrome86-ff82
+    strategy:
+      matrix:
+        node-version: [14.x]
     steps:
       # NODE VERSION
       - name: Use Node.js ${{ matrix.node-version }}
@@ -72,6 +75,7 @@ jobs:
       matrix:
         # run copies of the current job in parallel
         containers: [1, 2, 3, 4, 5]
+        node-version: [14.x]
     steps:
       # NODE VERSION
       - name: Use Node.js ${{ matrix.node-version }}
@@ -124,7 +128,7 @@ jobs:
       - name: 'UI Tests - react-ui - Chrome'
         uses: cypress-io/github-action@v2
         with:
-          start: npx http-server dist/storybook/react-ui -p 4400 & yarn nx run react-ui-e2e:e2e:ci
+          start: npx http-server dist/storybook/react-ui -p 4400, yarn nx run react-ui-e2e:e2e:ci
           wait-on: 'http://127.0.0.1:4400'
           browser: chrome
           record: true
