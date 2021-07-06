@@ -127,7 +127,7 @@ jobs:
       # --------------------------------------
       # launch storybook
       - name: Start-up Storybook
-        run: npx http-server dist/storybook/react-ui -p 4400
+        run: npx http-server dist/storybook/react-ui -p 4400 &
 
 
       - name: 'UI Tests - react-ui - Chrome'
@@ -135,6 +135,7 @@ jobs:
         with:
           start: yarn nx run react-ui-e2e:e2e:ci
           wait-on: 'http://127.0.0.1:4400'
+          wait-on-timeout: 600
           browser: chrome
           record: true
           parallel: true
