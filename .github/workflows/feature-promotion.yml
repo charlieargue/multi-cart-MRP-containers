@@ -90,6 +90,7 @@ jobs:
         uses: cypress-io/github-action@v2
         with:
           start: npx http-server dist/storybook/react-ui -p 4400 & yarn nx run react-ui-e2e:e2e:ci
+          wait-on: 'http://localhost:4400'
           browser: chrome
           record: true
           parallel: true
